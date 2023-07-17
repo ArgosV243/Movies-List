@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  docker-db:
+    image: postgres
+    environment:
+      - DATABASE_HOST=127.0.0.1
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=docker_db
+    ports:
+      - 5432:5432
+    volumes:
+      - $HOME/docker/volumes/postgres:/var/lib/postgresql/data
+
+  seed:
+    build: db/
+    depends_on:
+      - docker-db
+
+  api:
+    build: api/
+    ports:
+      - 8080:8080
+    depends_on:
+      - docker-db
+      - seed
+    volumes:
+      - ${PWD}/api:/app
+
+  ui:
+    build: ui
+    ports:
+      - 3000:3000
+    depends_on:
+      - api
+    volumes:
+      - ${PWD}/ui/movie-list:/app
